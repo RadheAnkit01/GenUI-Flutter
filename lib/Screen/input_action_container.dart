@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class InputActionContainer extends StatefulWidget {
-  final Function(String) onSubmitted;
+  final Future<void> Function(String) onSubmitted;
   final String hintText;
 
   const InputActionContainer({
@@ -23,57 +23,73 @@ class _InputActionContainerState extends State<InputActionContainer> {
     super.dispose();
   }
 
-  void _handleSubmitted() {
-    if (_controller.text.trim().isNotEmpty) {
-      widget.onSubmitted(_controller.text.trim());
-      _controller.clear(); // Clears the field after submission
+  // void _handleSubmitted() {
+  //   final text = _controller.text.trim();
+
+  //   if (text.isEmpty) return;
+
+  //   widget.onSubmitted(text);
+  //   _controller.clear();
+  // }
+  Future<void> _handleSubmitted() async {
+    final text = _controller.text.trim();
+
+    if (text.isEmpty) return;
+
+    try {
+      await widget.onSubmitted(text);
+
+      _controller.clear(); // clear only after success
+    } catch (e) {
+      // text remains for retry
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30.0), // Smooth rounded corners
-        border: Border.all(color: Colors.grey[300]!, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Expanded forces the TextField to occupy all space except the button
           Expanded(
             child: TextField(
+              maxLines: 5,
+              minLines: 1,
               controller: _controller,
               textInputAction: TextInputAction.send,
-              onSubmitted: (_) =>
-                  _handleSubmitted(), // Triggers on keyboard enter
+              onSubmitted: (_) async {
+                await _handleSubmitted();
+              },
+              style: TextStyle(color: colorScheme.onSurface, fontSize: 16),
+              cursorColor: colorScheme.primary,
               decoration: InputDecoration(
                 hintText: widget.hintText,
-                hintStyle: TextStyle(color: Colors.grey[400]),
-                border: InputBorder.none, // Removes the default underline
+                hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
               ),
             ),
           ),
+
           const SizedBox(width: 8),
-          // Circle Avatar styling for the Enter button
-          Material(
-            color: Colors.blueAccent,
-            shape: const CircleBorder(),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_upward), // Modern "Send/Enter" arrow
-              color: Colors.white,
-              iconSize: 20,
-              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-              onPressed: _handleSubmitted,
+
+          FilledButton(
+            onPressed: () async {
+              await _handleSubmitted();
+            },
+            style: FilledButton.styleFrom(
+              shape: const CircleBorder(),
+              padding: const EdgeInsets.all(14),
             ),
+            child: const Icon(Icons.arrow_upward_rounded),
           ),
         ],
       ),

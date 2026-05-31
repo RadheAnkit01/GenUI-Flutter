@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:gen_ui/Data/json.dart';
+// import 'package:gen_ui/Data/App/json.dart';
 
 class GenUiProvider extends ChangeNotifier {
-  final List<Map<String, dynamic>> _generatedUiList = [defaultdata];
+  final List<Map<String, dynamic>> _generatedUiList = [];
   List<Map<String, dynamic>> get generatedUiList => _generatedUiList;
 
   // Call this whenever your AI or system streams in new UI data
